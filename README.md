@@ -2,17 +2,17 @@
 
 1. Clone this repo
 2. Copy .env.example to .env
-3. Run docker (it will install all packages)
+3. Install php dependencies
+````
+composer install
+````
+4. Run docker (it will install all packages)
 ````
 docker-compose up -d
 ````
-4. Go into app container
+5. Go into app container
 ````
 docker exec -it cars_app bash
-````
-5. Install php dependencies
-````
-composer install
 ````
 6. Generate app key
 ````

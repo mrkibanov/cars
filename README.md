@@ -2,31 +2,35 @@
 
 1. Clone this repo
 2. Copy .env.example to .env
-3. Install php dependencies
+3. Run docker (it will install all packages)
 ````
-composer install
+sail up -d
 ````
-4. Run docker (it will install all packages)
+4. Install php dependencies
 ````
-docker-compose up -d
+sail composer install
 ````
-5. Go into app container
+5. Generate app key
 ````
-docker exec -it cars_app bash
+sail php artisan key:generate
 ````
-6. Generate app key
+6. Generate JWT secret
 ````
-php artisan key:generate
+sail php artisan jwt:secret
 ````
 7. Run migrations
 ````
-php artisan migrate --seed
+sail php artisan migrate --seed
+````
+8. Optimize files
+````
+sail php artisan optimize
 ````
 
 ## Documentation
 
 To generate documentation run inside docker container
 ````
-php artisan l5-swagger:generate
+sail php artisan l5-swagger:generate
 ````
-and go to http://{APP_URL}/api/documentation
+and go to [http://localhost/api/documentation](http://localhost/api/documentation)

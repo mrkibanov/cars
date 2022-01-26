@@ -18,4 +18,12 @@ class Brand extends Model
     {
         return $this->hasMany(Car::class);
     }
+
+    public static function boot() {
+        parent::boot();
+
+        static::deleting(function($brand) {
+            $brand->cars()->delete();
+        });
+    }
 }

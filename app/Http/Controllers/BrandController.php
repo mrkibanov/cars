@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreBrandRequest;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -9,6 +10,40 @@ use Illuminate\Http\Response;
 class BrandController extends Controller
 {
 
+    /**
+     * @OA\Get(
+     *      path="/brand",
+     *      operationId="getBrandsList",
+     *      tags={"Brands"},
+     *      summary="Get list of brands",
+     *      description="Returns paginated list of brands",
+     *      security={
+     *         {"apiAuth": {}}
+     *     },
+     *     @OA\Parameter(
+     *          name="search",
+     *          description="Search Brand by brand ora car name",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(ref="#/components/schemas/Brand")
+     *       ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden"
+     *      )
+     *     )
+     */
     public function index(Request $request)
     {
         $brands = (new Brand)->newQuery();
@@ -28,42 +63,149 @@ class BrandController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    /**
+     * @OA\Post(
+     *      path="/brand",
+     *      operationId="storeBrand",
+     *      tags={"Brands"},
+     *      summary="Store new brand",
+     *      description="Returns brand data",
+     *      security={
+     *         {"apiAuth": {}}
+     *      },
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(ref="#/components/schemas/StoreBrandRequest")
+     *      ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Successful operation",
+     *          @OA\JsonContent(ref="#/components/schemas/Brand")
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden"
+     *      )
+     * )
+     */
+    public function store(StoreBrandRequest $request)
     {
-        $this->validateBrand($request);
+        $request->validated();
 
-        Brand::create([
+        $brand = Brand::create([
             'name' => $request->input('name')
         ]);
 
-        return $this->sendResponse('Brand was created');
+        return $this->sendResponse($brand);
     }
 
-    public function update(Request $request, $id)
+    /**
+     * @OA\Put(
+     *      path="/brand/{id}",
+     *      operationId="updateBrand",
+     *      tags={"Brands"},
+     *      summary="Update existing brand",
+     *      description="Returns updated car data",
+     *      security={
+     *         {"apiAuth": {}}
+     *      },
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="Brand id",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\JsonContent(ref="#/components/schemas/StoreBrandRequest")
+     *      ),
+     *      @OA\Response(
+     *          response=202,
+     *          description="Successful operation",
+     *          @OA\JsonContent(ref="#/components/schemas/Brand")
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden"
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Resource Not Found"
+     *      )
+     * )
+     */
+    public function update(StoreBrandRequest $request, $id)
     {
-        $this->validateBrand($request);
+        $request->validated();
 
-        $brand = Brand::find($id);
-        if (!$brand) {
-            return $this->sendError('Brand Not Found.', Response::HTTP_NOT_FOUND);
-        }
+        $brand = Brand::findOrFail($id);
         $brand->name = $request->input('name');
         $brand->save();
 
-        return $this->sendResponse('Brand was updated');
+        return $this->sendResponse($brand);
     }
 
+    /**
+     * @OA\Delete(
+     *      path="/brand/{id}",
+     *      operationId="deleteBrand",
+     *      tags={"Brands"},
+     *      summary="Delete existing brand",
+     *      description="Deletes a record and returns message",
+     *      security={
+     *         {"apiAuth": {}}
+     *      },
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="Brand id",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=204,
+     *          description="Successful operation",
+     *          @OA\JsonContent()
+     *       ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden"
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Resource Not Found"
+     *      )
+     * )
+     */
     public function destroy($id)
     {
         return Brand::destroy($id) ?
             $this->sendResponse('Brand was destroyed') :
             $this->sendError('Brand Not Found.', Response::HTTP_NOT_FOUND);
-    }
-
-    private function validateBrand(Request $request)
-    {
-        return $request->validate([
-            'name' => 'required|unique:brands,name'
-        ]);
     }
 }
